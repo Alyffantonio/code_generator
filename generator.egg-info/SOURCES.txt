@@ -1,0 +1,9 @@
+pyproject.toml
+setup.cfg
+generator/__init__.py
+generator.egg-info/PKG-INFO
+generator.egg-info/SOURCES.txt
+generator.egg-info/dependency_links.txt
+generator.egg-info/top_level.txt
+generator/management/commands/__init__.py
+generator/management/commands/generatecrud.py
