@@ -2,6 +2,7 @@ import os
 from .create import generate_create
 from .delete import generate_delete
 from .view import generate_views
+from .urls.create_urls import create_urls
 from django.core.management.base import BaseCommand
 from django.apps import apps
 
@@ -24,6 +25,8 @@ class Command(BaseCommand):
         except LookupError:
             self.stderr.write(self.style.ERROR(f"App '{app_label}' não encontrada."))
             return
+
+        create_urls(app_label, overwrite=options.get('overwrite_urls', False))
 
         create_code = generate_create(app_label)
         delete_code = generate_delete(app_label)
