@@ -2,26 +2,25 @@ from django.apps import apps
 
 API_VIEW_TEMPLATE = """
 @csrf_exempt
-def {model_name_lower}_delete_api(request, id_object):
-    if request.method != 'DELETE':
-        return JsonResponse({{'error': 'Método não permitido, use DELETE'}}, status=405)
+def {model_name_lower}_view_api(request):
+    if request.method != 'GET':
+        return JsonResponse({{'error': 'Método não permitido, use GET'}}, status=405)
 
     try:
-        instance = get_object_or_404({model_name}, id=id_object)
-
-        instance.delete()
-
-        return JsonResponse(
-            {{'message': 'Objeto excluído com sucesso', 'data': {{'id': id_object}}}},
-            status=200
-        )
-
+        list_view = {model_name}.objects.all()
+        
+        # ajuste o caminho do template abaixo:
+        html = render_to_string('template/list.html', {{'list_view': list_view}}, request=request)
+        
+        return JsonResponse({{'html': html}}, status=200)
+        
     except Exception as e:
         return JsonResponse({{'error': f'Ocorreu um erro: {{str(e)}}'}}, status=500)
 """
 
 
-def generate_delete(app_label: str) -> str:
+
+def generate_views(app_label: str) -> str:
     app_config = apps.get_app_config(app_label)
     models = list(app_config.get_models())
 
