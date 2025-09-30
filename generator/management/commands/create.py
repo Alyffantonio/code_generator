@@ -27,7 +27,7 @@ def {model_name_lower}_create_api(request):
 """
 
 
-def generate_create_views(app_label: str) -> str:
+def generate_create(app_label: str) -> str:
     app_config = apps.get_app_config(app_label)
     models = list(app_config.get_models())
 
