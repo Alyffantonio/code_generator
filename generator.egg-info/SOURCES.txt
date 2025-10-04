@@ -5,5 +5,14 @@ generator.egg-info/PKG-INFO
 generator.egg-info/SOURCES.txt
 generator.egg-info/dependency_links.txt
 generator.egg-info/top_level.txt
+generator/management/__init__.py
 generator/management/commands/__init__.py
-generator/management/commands/generatecrud.py
+generator/management/commands/delete.py
+generator/management/commands/generate.py
+generator/management/commands/get.py
+generator/management/commands/patch.py
+generator/management/commands/post.py
+generator/management/commands/put.py
+generator/management/commands/urls/__init__.py
+generator/management/commands/urls/build.py
+generator/management/commands/urls/create_urls.py
