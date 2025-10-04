@@ -1,7 +1,9 @@
 import os
-from .create import generate_create
+from .post import generate_create
 from .delete import generate_delete
-from .view import generate_views
+from .get import generate_views
+from .put import generate_put
+from .patch import generate_patch
 from .urls.create_urls import create_urls
 from django.core.management.base import BaseCommand
 from django.apps import apps
@@ -31,6 +33,8 @@ class Command(BaseCommand):
         create_code = generate_create(app_label)
         delete_code = generate_delete(app_label)
         view_code = generate_views(app_label)
+        put_code = generate_put(app_label)
+        patch_code = generate_patch(app_label)
 
         imports_header = (
             "import json\n"
@@ -45,10 +49,14 @@ class Command(BaseCommand):
                 "# --- Código gerado automaticamente ---\n\n"
                 + imports_header
                 + create_code
-                + "\n\n"
+                + "\n"
                 + delete_code
-                + "\n\n"
+                + "\n"
                 + view_code
+                + "\n"
+                + put_code
+                + "\n"
+                + patch_code
         )
 
         self.stdout.write(final_code)
