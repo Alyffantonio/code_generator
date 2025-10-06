@@ -1,32 +1,29 @@
 from django.apps import apps
 
 VIEW_TEMPLATE = """
-@csrf_exempt
 @require_http_methods(["GET", "POST"])
-def {model_name_lower}_create(request):
-    if request.method == 'POST':
-        form = {form_name}(request.POST)
+def {model_name_lower}_update(request, id):
+    obj = get_object_or_404({model_name}, id=id)
+
+    if request.method == "POST":
+        form = {form_name}(request.POST, request.FILES, instance=obj)
         if form.is_valid():
-        
-            # se precisar manipular antes de salvar:
-            # obj = form.save(commit=False)
-            # obj.algum_campo = "valor"
-            # obj.save()
-            form.save()
-            
-            messages.success(request, "Livro criado com sucesso!")
-            return redirect('pagina_de_sucesso') # Lembre-se de criar essa URL e view
-        
+            obj = form.save()
+            messages.success(request, "{model_name} atualizado com sucesso!")
+            # ajuste a rota conforme seu projeto (detail/list)
+            return redirect("{app_label}:{model_name_lower}_detail", id=obj.id)
         else:
             messages.error(request, "Verifique os erros no formulário.")
     else:
-        form = {form_name}()
+        form = {form_name}(instance=obj)
 
-    return render(request, '{app_label}/{model_name_lower}_form.html', {{'form': form}}) #altere de acordo com o seu arquivo html
+    return render(request, "{app_label}/{model_name_lower}_form.html", {{
+        "form": form,
+        "object": obj
+    }})
 """
 
-
-def generate_form_view(app_label: str) -> str:
+def generate_form_update(app_label: str) -> str:
     try:
         app_config = apps.get_app_config(app_label)
     except LookupError:
