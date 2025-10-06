@@ -3,6 +3,8 @@ from django.core.management.base import BaseCommand
 from django.apps import apps
 from .form.post_form import generate_form_classes
 from .form.post_form_view import  generate_form_view
+from .form.update_form import  generate_form_update
+from .form.delet_form import  generate_form_delete
 from .form.imports import generate_imports, generate_form_imports
 from .form.urls.create_urls import create_urls
 
@@ -48,9 +50,11 @@ class Command(BaseCommand):
             app_config = apps.get_app_config(app_label)
 
             imports_code = generate_imports(app_label)
-            views_code = generate_form_view(app_label)
+            views_code_create = generate_form_view(app_label)
+            views_code_update = generate_form_update(app_label)
+            views_code_delete = generate_form_delete(app_label)
 
-            final_code = f"{imports_code}\n\n{views_code}"
+            final_code = f"{imports_code}\n\n{views_code_create}\n\n{views_code_update}\n\n{views_code_delete}"
 
             views_file_path = os.path.join(app_config.path, 'views.py')
             with open(views_file_path, 'a', encoding='utf-8') as f:
