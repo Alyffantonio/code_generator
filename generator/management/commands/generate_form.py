@@ -1,12 +1,15 @@
 import os
 from django.core.management.base import BaseCommand
 from django.apps import apps
+
+from .form.details_form import generate_form_details
 from .form.post_form import generate_form_classes
-from .form.post_form_view import  generate_form_view
+from .form.create_form import  generate_form_view
+from .form.read_form import generate_form_read
 from .form.update_form import  generate_form_update
-from .form.delet_form import  generate_form_delete
+from .form.delete_form import  generate_form_delete
 from .form.imports import generate_imports, generate_form_imports
-from .form.urls.create_urls import create_urls
+from .urls.create_urls import create_urls
 
 class Command(BaseCommand):
     help = "Gera o arquivo forms.py ou views.py para uma app."
@@ -17,7 +20,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         app_label = options['app_label']
 
-        create_urls(app_label, overwrite=options.get('overwrite_urls', False))
+        create_urls(app_label, overwrite=options.get('overwrite_urls', False), builder="form")
 
         self._generate_form_file(app_label)
 
@@ -53,8 +56,10 @@ class Command(BaseCommand):
             views_code_create = generate_form_view(app_label)
             views_code_update = generate_form_update(app_label)
             views_code_delete = generate_form_delete(app_label)
+            views_code_read = generate_form_read(app_label)
+            views_code_details = generate_form_details(app_label)
 
-            final_code = f"{imports_code}\n\n{views_code_create}\n\n{views_code_update}\n\n{views_code_delete}"
+            final_code = f"{imports_code}\n\n{views_code_read}\n\n{views_code_details}\n\n{views_code_create}\n\n{views_code_update}\n\n{views_code_delete}"
 
             views_file_path = os.path.join(app_config.path, 'views.py')
             with open(views_file_path, 'a', encoding='utf-8') as f:

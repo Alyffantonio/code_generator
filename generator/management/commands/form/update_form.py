@@ -16,11 +16,13 @@ def {model_name_lower}_update(request, id):
             messages.error(request, "Verifique os erros no formulário.")
     else:
         form = {form_name}(instance=obj)
-
-    return render(request, "{app_label}/{model_name_lower}_form.html", {{
-        "form": form,
-        "object": obj
-    }})
+    
+    context = {{
+        'form' : form,
+        'object': obj
+    }}
+    
+    return render(request, "{app_label}/{model_name_lower}_form.html", context )
 """
 
 def generate_form_update(app_label: str) -> str:
