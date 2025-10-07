@@ -1,31 +1,24 @@
 from django.apps import apps
 
 VIEW_TEMPLATE = """
+@csrf_exempt  # remova em produção (ideal: nem usar)
 @login_required
-@require_http_methods(["GET", "POST"])
+@require_POST
 def {model_name_lower}_delete(request, pk):
 
     obj = get_object_or_404({model_name}, pk=pk)
-
-    if request.method == "POST":
+    
+    try:
         obj.delete()
-
-        messages.success(request, "{model_name} excluído com sucesso!")
-
-        destino = request.GET.get("next") or "{app_label}:{model_name_lower}_list"
-
-        try:
-            return redirect(destino)
-        except Exception:
-            return redirect("/")
-
-    context = {{
-        "obj": obj,
-    }}
-
-    return render(request, "{app_label}/{model_name_lower}_confirm_delete.html", context)
+    except ProtectedError:
+        messages.error(request, "Não foi possível excluir: existe(m) registro(s) relacionado(s).")
+    except (IntegrityError, DatabaseError) as e:
+        messages.error(request, f"Erro de banco ao excluir: {{e}}")
+    else:
+        messages.success(request, f"Registro excluído com sucesso!")
+        
+    return redirect("{model_name_lower}_list")
 """
-
 
 def generate_form_delete(app_label: str) -> str:
     try:

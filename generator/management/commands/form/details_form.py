@@ -2,19 +2,16 @@ from django.apps import apps
 
 
 VIEW_TEMPLATE = """
+@csrf_exempt  # remova em produção (ideal: nem usar)
 @login_required
-@require_http_methods(["GET", "POST"])
-def {model_name_lower}_details(request, id):
-
-    if request.method == "GET":
-        
-        objects = get_object_or_404({model_name}, id=id)
-
-        context = {{
-            "objects_details": objects,
-        }}
-
-    return render(request, "{app_label}/{model_name_lower}_read.html", context)
+@require_GET
+def {model_name_lower}_details(request, pk):
+    
+    obj = get_object_or_404({model_name}, pk=pk)
+    
+    context = {{"objects_list": obj}}
+    
+    return render(request, "{app_label}/{model_name_lower}_detail.html", context)
 """
 
 

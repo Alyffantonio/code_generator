@@ -17,10 +17,12 @@ def generate_imports(app_label: str) -> str:
     model_names = [model.__name__ for model in models]
     import_lines = [
         "from django.shortcuts import render, redirect, get_object_or_404",
-        "from django.views.decorators.http import require_http_methods",
+        "from django.views.decorators.http import require_GET, require_POST",
         "from django.contrib.auth.decorators import login_required",
         "from django.contrib import messages",
         "from django.views.decorators.csrf import csrf_exempt",
+        "from django.db.models.deletion import ProtectedError",
+        "from django.db import IntegrityError, DatabaseError",
         f"from .forms import {', '.join(form_names)}",
         f"from .models import {', '.join(model_names)}"
     ]
