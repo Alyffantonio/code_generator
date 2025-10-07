@@ -1,28 +1,22 @@
 from django.apps import apps
 
 VIEW_TEMPLATE = """
-@require_http_methods(["GET", "POST"])
-def {model_name_lower}_update(request, id):
-    obj = get_object_or_404({model_name}, id=id)
+@csrf_exempt  # remova em produção (ideal: nem usar)
+@login_required
+@require_POST
+def {model_name_lower}_update(request, pk):
 
-    if request.method == "POST":
-        form = {form_name}(request.POST, request.FILES, instance=obj)
-        if form.is_valid():
-            obj = form.save()
-            messages.success(request, "{model_name} atualizado com sucesso!")
-            # ajuste a rota conforme seu projeto (detail/list)
-            return redirect("{app_label}:{model_name_lower}_detail", id=obj.id)
-        else:
-            messages.error(request, "Verifique os erros no formulário.")
+    obj = get_object_or_404({model_name}, pk=pk)
+
+    form = {form_name}(request.POST,request.FILES, instance=obj)
+
+    if form.is_valid():
+        form.save()
+        messages.success(request, "{model_name} atualizado com sucesso!")
     else:
-        form = {form_name}(instance=obj)
-    
-    context = {{
-        'form' : form,
-        'object': obj
-    }}
-    
-    return render(request, "{app_label}/{model_name_lower}_form.html", context )
+        messages.error(request, "Verifique os erros no formulário.")
+
+    return redirect("{model_name_lower}_list")
 """
 
 def generate_form_update(app_label: str) -> str:

@@ -1,28 +1,20 @@
 from django.apps import apps
 
 VIEW_TEMPLATE = """
-@csrf_exempt
-@require_http_methods(["GET", "POST"])
+@csrf_exempt  # remova em produção (ideal: nem usar)
+@login_required
+@require_POST
 def {model_name_lower}_create(request):
-    if request.method == 'POST':
-        form = {form_name}(request.POST)
-        if form.is_valid():
-        
-            # se precisar manipular antes de salvar:
-            # obj = form.save(commit=False)
-            # obj.algum_campo = "valor"
-            # obj.save()
-            form.save()
-            
-            messages.success(request, "Livro criado com sucesso!")
-            return redirect('pagina_de_sucesso') # Lembre-se de criar essa URL e view
-        
-        else:
-            messages.error(request, "Verifique os erros no formulário.")
-    else:
-        form = {form_name}()
 
-    return render(request, '{app_label}/{model_name_lower}_form.html', {{'form': form}}) #altere de acordo com o seu arquivo html
+    form = {form_name}(request.POST, request.FILES)
+    
+    if form.is_valid():
+        form.save()
+        messages.success(request, "{model_name} criado com sucesso!")
+    else:
+        messages.error(request, "Verifique os erros no formulário.")
+    
+    return redirect("{model_name_lower}_list")
 """
 
 
