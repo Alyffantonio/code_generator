@@ -13,10 +13,16 @@ def generate_imports(app_label: str) -> str:
         return f"# AVISO: Nenhum modelo encontrado na app '{app_label}'."
 
     form_names = [f"{model.__name__}Form" for model in models]
+
+    model_names = [model.__name__ for model in models]
     import_lines = [
-        "from django.shortcuts import render, redirect",
-        "from django.views.decorators.csrf import csrf_exempt",  # Se estiver usando
-        f"from .forms import {', '.join(form_names)}"
+        "from django.shortcuts import render, redirect, get_object_or_404",
+        "from django.views.decorators.http import require_http_methods",
+        "from django.contrib.auth.decorators import login_required",
+        "from django.contrib import messages",
+        "from django.views.decorators.csrf import csrf_exempt",
+        f"from .forms import {', '.join(form_names)}",
+        f"from .models import {', '.join(model_names)}"
     ]
     return "\n".join(import_lines)
 

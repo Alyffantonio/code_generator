@@ -4,7 +4,7 @@ from generator.management.commands.api.delete import generate_delete
 from generator.management.commands.api.get import generate_views
 from generator.management.commands.api.put import generate_put
 from generator.management.commands.api.patch import generate_patch
-from generator.management.commands.api.urls import create_urls
+from generator.management.commands.urls import create_urls
 from django.core.management.base import BaseCommand
 from django.apps import apps
 

@@ -4,24 +4,26 @@ VIEW_TEMPLATE = """
 @login_required
 @require_http_methods(["GET", "POST"])
 def {model_name_lower}_delete(request, pk):
+
     obj = get_object_or_404({model_name}, pk=pk)
 
     if request.method == "POST":
         obj.delete()
+
         messages.success(request, "{model_name} excluído com sucesso!")
-        # Ajuste o nome da rota de destino conforme seu urls.py
-        # Ex.: path("{model_name_lower}/", views.{model_name_lower}_list, name="{model_name_lower}_list")
+
         destino = request.GET.get("next") or "{app_label}:{model_name_lower}_list"
-        
+
         try:
             return redirect(destino)
         except Exception:
-            return redirect("/")# não esqueça de atualizar de acordo com seu projeto
+            return redirect("/")
 
-    # GET -> página de confirmação
-    return render(request, "{app_label}/{model_name_lower}_confirm_delete.html", {{
-        "object": obj
-    }})
+    context = {{
+        "obj": obj,
+    }}
+
+    return render(request, "{app_label}/{model_name_lower}_confirm_delete.html", context)
 """
 
 
