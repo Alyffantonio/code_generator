@@ -1,4 +1,3 @@
-from django.apps import apps
 
 API_VIEW_TEMPLATE = """
 @csrf_exempt
@@ -21,18 +20,16 @@ def {model_name_lower}_delete_api(request, id_object):
 """
 
 
-def generate_delete(app_label: str) -> str:
-    app_config = apps.get_app_config(app_label)
-    models = list(app_config.get_models())
+def generate_delete(model):
 
     all_views_code = []
-    for model in models:
-        context = {
-            'model_name': model.__name__,
-            'model_name_lower': model.__name__.lower(),
-        }
-        view_code = API_VIEW_TEMPLATE.format(**context)
-        all_views_code.append(view_code)
+
+    context = {
+        'model_name': model.__name__,
+        'model_name_lower': model.__name__.lower(),
+    }
+    view_code = API_VIEW_TEMPLATE.format(**context)
+    all_views_code.append(view_code)
 
     return "\n".join(all_views_code)
 

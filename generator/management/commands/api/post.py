@@ -1,13 +1,15 @@
-from django.apps import apps
+from django.db import models
 
 API_VIEW_TEMPLATE = """
 @csrf_exempt
 def {model_name_lower}_create_api(request):
     if request.method != 'POST':
         return JsonResponse({{'error': 'Método não permitido, use POST'}}, status=405)
-
     try:
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body.decode('utf-8') or '{{}}')
+        except json.JSONDecodeError:
+            return JsonResponse({{'error': 'JSON inválido'}}, status=400)
 
         {field_assignments}
 
@@ -18,41 +20,41 @@ def {model_name_lower}_create_api(request):
 
         response_data = {{
             'message': '{model_name} criado com sucesso!',
-            'data': {{ 'id': new_instance.id }}
+            'data': {{ 'id': new_instance.pk }}
         }}
         return JsonResponse(response_data, status=201)
-
     except Exception as e:
         return JsonResponse({{'error': f'Ocorreu um erro: {{str(e)}}'}}, status=500)
 """
 
+def generate_create(model):
 
-def generate_create(app_label: str) -> str:
-    app_config = apps.get_app_config(app_label)
-    models = list(app_config.get_models())
+    editable_fields = [
+        f for f in model._meta.fields
+        if not f.primary_key
+        and not getattr(f, "auto_now", False)
+        and not getattr(f, "auto_now_add", False)
+    ]
 
-    all_views_code = []
-    for model in models:
-        editable_fields = [
-            f.name for f in model._meta.get_fields()
-            if not f.primary_key and not getattr(f, 'auto_now_add', False) and not getattr(f, 'auto_now', False)
-        ]
+    assignment_lines = []
+    creation_arg_lines = []
 
-        assignments_lines = [f"{field} = data.get('{field}')" for field in editable_fields]
-        field_assignments_str = ('\n' + ' ' * 8).join(assignments_lines)
+    for f in editable_fields:
+        name = f.name
+        if isinstance(f, models.ForeignKey):
+            assignment_lines.append(f"{name}_id = data.get('{name}_id')")
+            creation_arg_lines.append(f"{name}_id={name}_id,")
+        else:
+            assignment_lines.append(f"{name} = data.get('{name}')")
+            creation_arg_lines.append(f"{name}={name},")
 
-        creation_args_lines = [f"{field}={field}," for field in editable_fields]
-        model_creation_args_str = ('\n' + ' ' * 12).join(creation_args_lines)
+    field_assignments_str = ('\n' + ' ' * 8).join(assignment_lines) if assignment_lines else "pass"
+    model_creation_args_str = ('\n' + ' ' * 12).join(creation_arg_lines) if creation_arg_lines else ""
 
-        context = {
-            'model_name': model.__name__,
-            'model_name_lower': model.__name__.lower(),
-            'field_assignments': field_assignments_str,
-            'model_creation_args': model_creation_args_str,
-        }
-
-        view_code = API_VIEW_TEMPLATE.format(**context)
-        all_views_code.append(view_code)
-
-    return "\n".join(all_views_code)
-
+    context = {
+        "model_name": model.__name__,
+        "model_name_lower": model._meta.model_name,
+        "field_assignments": field_assignments_str,
+        "model_creation_args": model_creation_args_str,
+    }
+    return API_VIEW_TEMPLATE.format(**context)

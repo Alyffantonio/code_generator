@@ -29,31 +29,30 @@ def {model_name_lower}_patch_api(request, id_object):
         return JsonResponse({{'error': f'Ocorreu um erro: {{str(e)}}'}}, status=500)
 """
 
-def generate_patch(app_label: str) -> str:
-    app_config = apps.get_app_config(app_label)
-    models = list(app_config.get_models())
+def generate_patch(model):
+
 
     all_views_code = []
-    for model in models:
-        editable_fields = [
-            f.name for f in model._meta.get_fields()
-            if not f.primary_key and not getattr(f, 'auto_now_add', False) and not getattr(f, 'auto_now', False)
-        ]
 
-        assignments_lines = [f"{field} = data.get('{field}')" for field in editable_fields]
-        field_assignments_str = ('\n' + ' ' * 8).join(assignments_lines)
+    editable_fields = [
+        f.name for f in model._meta.get_fields()
+        if not f.primary_key and not getattr(f, 'auto_now_add', False) and not getattr(f, 'auto_now', False)
+    ]
 
-        creation_args_lines = [f"instance.{field}={field}," for field in editable_fields]
-        model_creation_args_str = ('\n' + ' ' * 8).join(creation_args_lines)
+    assignments_lines = [f"{field} = data.get('{field}')" for field in editable_fields]
+    field_assignments_str = ('\n' + ' ' * 8).join(assignments_lines)
 
-        context = {
-            'model_name': model.__name__,
-            'model_name_lower': model.__name__.lower(),
-            'field_assignments': field_assignments_str,
-            'model_creation_args': model_creation_args_str,
-        }
+    creation_args_lines = [f"instance.{field}={field}," for field in editable_fields]
+    model_creation_args_str = ('\n' + ' ' * 8).join(creation_args_lines)
 
-        view_code = API_VIEW_TEMPLATE.format(**context)
-        all_views_code.append(view_code)
+    context = {
+        'model_name': model.__name__,
+        'model_name_lower': model.__name__.lower(),
+        'field_assignments': field_assignments_str,
+        'model_creation_args': model_creation_args_str,
+    }
+
+    view_code = API_VIEW_TEMPLATE.format(**context)
+    all_views_code.append(view_code)
 
     return "\n".join(all_views_code)
